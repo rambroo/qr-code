@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>QR Code Verification</title>
+  <h1>Is it even Working </h1>
+  <!-- Include the html5-qrcode library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+    #qr-reader {
+      width: 100%;
+      max-width: 3000px;
+      height: 100%;
+      margin: 0 auto;
+      border: 2px solid #007bff;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #result {
+      margin-top: 700px;
+      font-size: 18px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Verify QR Code</h1>
+  <div id="qr-reader"></div>
+  <button onclick="startScanner()">Start Scanning</button>
+  <div id="result"></div>
+
+  <script>
+    function onScanSuccess(decodedText, decodedResult) {
+      // Log the scanned data to the console
+      console.log("QR code detected:", decodedText);
+
+      // Display the scanned data on the webpage
+      document.getElementById('result').innerText = 'QR Code Data: ' + decodedText;
+
+      // Optionally, send the data to the server
+      fetch(scriptUrl, {
+        method: 'POST',
+        body: JSON.stringify({ qrCodeData: decodedText }),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('result').innerText += '\nServer Response: ' + data;
+        stopScanner();
+      })
+      .catch(error => {
+        document.getElementById('result').innerText += '\nError: ' + error.message;
+        stopScanner();
+      });
+    }
+
+    function startScanner() {
+      const html5QrCode = new Html5Qrcode("qr-reader");
+
+      html5QrCode.start(
+        { facingMode: "environment" },
+        {
+          fps: 10, // Frames per second
+          qrbox: { width: 600 , height: 600 } // Size of scanning box
+        },
+        onScanSuccess
+      ).catch(err => {
+        console.error("Failed to start scanning:", err);
+        document.getElementById('result').innerText = 'Error: ' + err.message;
+      });
+    }
+
+    function stopScanner() {
+      const html5QrCode = new Html5Qrcode("qr-reader");
+
+      html5QrCode.stop().then(ignore => {
+        console.log("QR code scanning stopped.");
+      }).catch(err => {
+        console.error("Failed to stop scanning:", err);
+      });
+    }
+  </script>
+</body>
+</html>
