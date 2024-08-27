@@ -49,17 +49,19 @@
   <div id="result"></div>
 
   <script>
+    let scannerRunning = false;
+    let html5QrCode;
+
     function onScanSuccess(decodedText, decodedResult) {
       // Log the scanned data to the console
       console.log("QR code detected:", decodedText);
 
       // Display the scanned data on the webpage
       document.getElementById('result').innerText = 'QR Code Data: ' + decodedText;
-      // Update this URL with the latest web app URL
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbz_dLLD2LZcoRsusmJgSViOn4RXOwT2vXg2_lLbhpRwVbkvSGe2Lt0qq-Vkg4kAqxk-1w/exec'; 
 
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycbz_dLLD2LZcoRsusmJgSViOn4RXOwT2vXg2_lLbhpRwVbkvSGe2Lt0qq-Vkg4kAqxk-1w/exec';
 
-      //Send the data to the server
+      // Send the data to the server
       fetch(scriptUrl, {
         method: 'POST',
         body: JSON.stringify({ qrCodeData: decodedText }),
@@ -77,26 +79,37 @@
     }
 
     function startScanner() {
-      const html5QrCode = new Html5Qrcode("qr-reader");
+      if (scannerRunning) {
+        console.log("Scanner already running.");
+        return;
+      }
+
+      scannerRunning = true;
+      html5QrCode = new Html5Qrcode("qr-reader");
 
       html5QrCode.start(
         { facingMode: "environment" },
         {
           fps: 10, // Frames per second
-          qrbox: { width: 600 , height: 600 } // Size of scanning box
+          qrbox: { width: 600, height: 600 } // Size of scanning box
         },
         onScanSuccess
       ).catch(err => {
         console.error("Failed to start scanning:", err);
         document.getElementById('result').innerText = 'Error: ' + err.message;
+        scannerRunning = false;
       });
     }
 
     function stopScanner() {
-      const html5QrCode = new Html5Qrcode("qr-reader");
+      if (!scannerRunning) {
+        console.warn("Cannot stop, scanner is not running or paused.");
+        return;
+      }
 
       html5QrCode.stop().then(ignore => {
         console.log("QR code scanning stopped.");
+        scannerRunning = false;
       }).catch(err => {
         console.error("Failed to stop scanning:", err);
       });
