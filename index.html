@@ -55,8 +55,11 @@
 
       // Display the scanned data on the webpage
       document.getElementById('result').innerText = 'QR Code Data: ' + decodedText;
+      // Update this URL with the latest web app URL
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbz_dLLD2LZcoRsusmJgSViOn4RXOwT2vXg2_lLbhpRwVbkvSGe2Lt0qq-Vkg4kAqxk-1w/exec'; 
 
-      // Optionally, send the data to the server
+
+      //Send the data to the server
       fetch(scriptUrl, {
         method: 'POST',
         body: JSON.stringify({ qrCodeData: decodedText }),
@@ -65,11 +68,11 @@
       .then(response => response.text())
       .then(data => {
         document.getElementById('result').innerText += '\nServer Response: ' + data;
-        stopScanner();
+        stopScanner(); // Stop scanning after a successful scan
       })
       .catch(error => {
         document.getElementById('result').innerText += '\nError: ' + error.message;
-        stopScanner();
+        stopScanner(); // Stop scanning on error
       });
     }
 
